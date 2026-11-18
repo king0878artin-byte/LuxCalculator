@@ -2,10 +2,13 @@
 name: Build LuxCalculator APK
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -15,18 +18,24 @@ jobs:
       - name: Get project
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev
+          sudo apt-get install -y \
+            git zip unzip openjdk-17-jdk \
+            python3-pip python3-venv python3-dev \
+            build-essential autoconf libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
+            cmake libffi-dev libssl-dev libltdl-dev
 
       - name: Install Buildozer
         run: |
-          python3 -m pip install --user --upgrade --break-system-packages buildozer Cython==0.29.36
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          python3 -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip setuptools wheel
+          .venv/bin/python -m pip install buildozer cython
 
       - name: Build APK
-        run: buildozer android debug
+        run: .venv/bin/buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

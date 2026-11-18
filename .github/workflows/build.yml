@@ -28,14 +28,20 @@ jobs:
             zlib1g-dev libncurses5-dev libncursesw5-dev \
             cmake libffi-dev libssl-dev libltdl-dev
 
-      - name: Install Buildozer
+      - name: Install Buildozer and Cython
         run: |
           python3 -m venv .venv
           .venv/bin/python -m pip install --upgrade pip setuptools wheel
-          .venv/bin/python -m pip install buildozer cython
+          .venv/bin/python -m pip install buildozer "Cython==0.29.36"
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+
+      - name: Check Cython
+        run: |
+          cython --version
+          buildozer --version
 
       - name: Build APK
-        run: .venv/bin/buildozer android debug
+        run: buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
